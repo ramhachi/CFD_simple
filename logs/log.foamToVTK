@@ -9,9 +9,9 @@ Build  : _87ed40d2-20251219 OPENFOAM=2512 version=2512
 Arch   : "LSB;label=32;scalar=64"
 Exec   : foamToVTK
 Date   : Feb 23 2026
-Time   : 15:45:09
-Host   : 8a712379775b
-PID    : 229
+Time   : 16:35:05
+Host   : 99ef523e03e9
+PID    : 240
 I/O    : uncollated
 Case   : /data
 nProcs : 1
@@ -26,7 +26,7 @@ Create time
 Initial memory 122556 kB
 Create mesh for time = 0
 
-VTK mesh topology: 0.27 s, 140040 kB
+VTK mesh topology: 0.35 s, 141304 kB
 Time: 0
     volScalar    : k nut omega p
     volVector    : U
@@ -37,7 +37,7 @@ Time: 0
     Boundary  : "VTK/data_0/boundary/topAndSides.vtp"
     Boundary  : "VTK/data_0/boundary/body.vtp"
     Boundary  : "VTK/data_0/boundary/tires.vtp"
-Wrote in 0.39 s, 200344 kB
+Wrote in 0.52 s, 204952 kB
 Time: 20
     volScalar    : k nut omega p
     volVector    : U
@@ -48,7 +48,7 @@ Time: 20
     Boundary  : "VTK/data_20/boundary/topAndSides.vtp"
     Boundary  : "VTK/data_20/boundary/body.vtp"
     Boundary  : "VTK/data_20/boundary/tires.vtp"
-Wrote in 0.33 s, 205984 kB
+Wrote in 0.56 s, 208300 kB
 Time: 40
     volScalar    : k nut omega p
     volVector    : U
@@ -59,7 +59,7 @@ Time: 40
     Boundary  : "VTK/data_40/boundary/topAndSides.vtp"
     Boundary  : "VTK/data_40/boundary/body.vtp"
     Boundary  : "VTK/data_40/boundary/tires.vtp"
-Wrote in 0.33 s, 199512 kB
+Wrote in 0.62 s, 208300 kB
 Time: 60
     volScalar    : k nut omega p
     volVector    : U
@@ -70,7 +70,7 @@ Time: 60
     Boundary  : "VTK/data_60/boundary/topAndSides.vtp"
     Boundary  : "VTK/data_60/boundary/body.vtp"
     Boundary  : "VTK/data_60/boundary/tires.vtp"
-Wrote in 0.34 s, 203996 kB
+Wrote in 0.69 s, 208300 kB
 Time: 80
     volScalar    : k nut omega p
     volVector    : U
@@ -81,7 +81,7 @@ Time: 80
     Boundary  : "VTK/data_80/boundary/topAndSides.vtp"
     Boundary  : "VTK/data_80/boundary/body.vtp"
     Boundary  : "VTK/data_80/boundary/tires.vtp"
-Wrote in 0.35 s, 199512 kB
+Wrote in 0.59 s, 208300 kB
 Time: 100
     volScalar    : k nut omega p
     volVector    : U
@@ -92,7 +92,7 @@ Time: 100
     Boundary  : "VTK/data_100/boundary/topAndSides.vtp"
     Boundary  : "VTK/data_100/boundary/body.vtp"
     Boundary  : "VTK/data_100/boundary/tires.vtp"
-Wrote in 0.35 s, 205984 kB
+Wrote in 0.57 s, 208300 kB
 Time: 120
     volScalar    : k nut omega p
     volVector    : U
@@ -103,7 +103,7 @@ Time: 120
     Boundary  : "VTK/data_120/boundary/topAndSides.vtp"
     Boundary  : "VTK/data_120/boundary/body.vtp"
     Boundary  : "VTK/data_120/boundary/tires.vtp"
-Wrote in 0.35 s, 205984 kB
+Wrote in 0.57 s, 208300 kB
 Time: 140
     volScalar    : k nut omega p
     volVector    : U
@@ -114,7 +114,7 @@ Time: 140
     Boundary  : "VTK/data_140/boundary/topAndSides.vtp"
     Boundary  : "VTK/data_140/boundary/body.vtp"
     Boundary  : "VTK/data_140/boundary/tires.vtp"
-Wrote in 0.35 s, 205984 kB
+Wrote in 0.58 s, 208300 kB
 Time: 160
     volScalar    : k nut omega p
     volVector    : U
@@ -125,7 +125,7 @@ Time: 160
     Boundary  : "VTK/data_160/boundary/topAndSides.vtp"
     Boundary  : "VTK/data_160/boundary/body.vtp"
     Boundary  : "VTK/data_160/boundary/tires.vtp"
-Wrote in 0.35 s, 205984 kB
+Wrote in 0.53 s, 208300 kB
 Time: 180
     volScalar    : k nut omega p
     volVector    : U
@@ -136,7 +136,7 @@ Time: 180
     Boundary  : "VTK/data_180/boundary/topAndSides.vtp"
     Boundary  : "VTK/data_180/boundary/body.vtp"
     Boundary  : "VTK/data_180/boundary/tires.vtp"
-Wrote in 0.35 s, 199512 kB
+Wrote in 0.45 s, 208300 kB
 Time: 200
     volScalar    : k nut omega p
     volVector    : U
@@ -147,7 +147,7 @@ Time: 200
     Boundary  : "VTK/data_200/boundary/topAndSides.vtp"
     Boundary  : "VTK/data_200/boundary/body.vtp"
     Boundary  : "VTK/data_200/boundary/tires.vtp"
-Wrote in 0.34 s, 205984 kB
+Wrote in 0.45 s, 208300 kB
 Time: 220
     volScalar    : k nut omega p
     volVector    : U
@@ -158,7 +158,7 @@ Time: 220
     Boundary  : "VTK/data_220/boundary/topAndSides.vtp"
     Boundary  : "VTK/data_220/boundary/body.vtp"
     Boundary  : "VTK/data_220/boundary/tires.vtp"
-Wrote in 0.35 s, 205984 kB
+Wrote in 0.45 s, 208300 kB
 Time: 240
     volScalar    : k nut omega p
     volVector    : U
@@ -169,7 +169,7 @@ Time: 240
     Boundary  : "VTK/data_240/boundary/topAndSides.vtp"
     Boundary  : "VTK/data_240/boundary/body.vtp"
     Boundary  : "VTK/data_240/boundary/tires.vtp"
-Wrote in 0.34 s, 199512 kB
+Wrote in 0.48 s, 208300 kB
 Time: 250
     volScalar    : k nut omega p
     volVector    : U
@@ -183,7 +183,7 @@ Time: 250
 
 
 --> FOAM FATAL IO ERROR: (openfoam-2512)
-Size 96507 is not equal to the expected length 84826
+Size 96507 is not equal to the expected length 90398
 
 file: 250/k/internalField at line 21.
 

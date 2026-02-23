@@ -30,7 +30,24 @@ def get_vtk_steps():
     steps.sort(key=lambda x: x[0])
     return steps
 
-def generate_static_slices(mesh, step, out_dir):
+def get_global_clim(mesh, fields=['p', 'U']):
+    """
+    Get the (min, max) scalar range for the specified fields from a given mesh.
+    This ensures color scales remain consistent across different frames.
+    """
+    clim_dict = {}
+    for field in fields:
+        if field in mesh.array_names:
+            arr = mesh[field]
+            if len(arr.shape) > 1 and arr.shape[1] > 1:
+                # ベクトルの場合は大きさ(magnitude)で最小最大を取得
+                mag = np.linalg.norm(arr, axis=1)
+                clim_dict[field] = (float(np.nanmin(mag)), float(np.nanmax(mag)))
+            else:
+                clim_dict[field] = (float(np.nanmin(arr)), float(np.nanmax(arr)))
+    return clim_dict
+
+def generate_static_slices(mesh, step, out_dir, clim=None):
     """
     Generates X, Y, Z normal slices at origin (0,0,0) for fields 'p' and 'U'.
     """
@@ -49,7 +66,8 @@ def generate_static_slices(mesh, step, out_dir):
                     continue
                     
                 p = pv.Plotter(off_screen=True)
-                p.add_mesh(slice_mesh, scalars=field, cmap='jet')
+                field_clim = clim.get(field) if clim else None
+                p.add_mesh(slice_mesh, scalars=field, cmap='jet', clim=field_clim)
                 
                 # カメラ位置の調整
                 if normal == 'x': p.view_yz()
@@ -66,7 +84,7 @@ def generate_static_slices(mesh, step, out_dir):
         except Exception:
             pass
 
-def create_animation(steps, out_dir):
+def create_animation(steps, out_dir, clim=None):
     """
     Creates GIF animations for 'p' and 'U' on X=0, Y=0, Z=0 planes across all steps.
     """
@@ -91,7 +109,8 @@ def create_animation(steps, out_dir):
                         continue
                     
                     p.clear()
-                    p.add_mesh(slice_mesh, scalars=field, cmap='jet')
+                    field_clim = clim.get(field) if clim else None
+                    p.add_mesh(slice_mesh, scalars=field, cmap='jet', clim=field_clim)
                     
                     if normal == 'x': p.view_yz()
                     elif normal == 'y': p.view_xz()
@@ -106,7 +125,7 @@ def create_animation(steps, out_dir):
             p.close()
             print(f"Saved animation: {gif_path}")
 
-def create_sweeping_animation(mesh, step, out_dir, num_frames=30):
+def create_sweeping_animation(mesh, step, out_dir, num_frames=30, clim=None):
     """
     Creates sweeping animations along X, Y, Z axes for 'p' and 'U' at a specific step.
     """
@@ -141,7 +160,8 @@ def create_sweeping_animation(mesh, step, out_dir, num_frames=30):
                         continue
                     
                     p.clear()
-                    p.add_mesh(slice_mesh, scalars=field, cmap='jet')
+                    field_clim = clim.get(field) if clim else None
+                    p.add_mesh(slice_mesh, scalars=field, cmap='jet', clim=field_clim)
                     
                     if normal == 'x': p.view_yz()
                     elif normal == 'y': p.view_xz()
@@ -157,6 +177,11 @@ def create_sweeping_animation(mesh, step, out_dir, num_frames=30):
             print(f"Saved sweeping animation: {gif_path}")
 
 def main():
+    try:
+        pv.start_xvfb()
+    except Exception:
+        pass
+        
     steps = get_vtk_steps()
     if not steps:
         print("No VTK files found. Ensure CFD analysis completed and 'VTK' folder exists.")
@@ -165,8 +190,18 @@ def main():
     out_dir = "visualization_output"
     os.makedirs(out_dir, exist_ok=True)
     
-    max_step = steps[-1][0]
+    max_step, max_filepath = steps[-1]
     target_half = max_step // 2
+    
+    # 色のスケールを最終ステップに固定するための範囲を取得
+    print("Calculating global color scales from the final step...")
+    try:
+        mesh_max = pv.read(max_filepath)
+        global_clim = get_global_clim(mesh_max)
+        print(f"Color scales fixed: {global_clim}")
+    except Exception as e:
+        print(f"Warning: could not compute global color bounds: {e}")
+        global_clim = None
     
     # 計算の半分のステップに最も近いデータを探す
     closest = min(steps, key=lambda x: abs(x[0] - target_half))
@@ -175,13 +210,13 @@ def main():
     print(f"--- 1. Generating Static Images and Sweeps for Half-way Step ({half_step}) ---")
     try:
         mesh_half = pv.read(half_filepath)
-        generate_static_slices(mesh_half, half_step, out_dir)
-        create_sweeping_animation(mesh_half, half_step, out_dir)
+        generate_static_slices(mesh_half, half_step, out_dir, clim=global_clim)
+        create_sweeping_animation(mesh_half, half_step, out_dir, clim=global_clim)
     except Exception as e:
         print(f"Failed to read or process half-way step VTK: {e}")
         
     print(f"\n--- 2. Generating Time-series Animations (up to Step {max_step}) ---")
-    create_animation(steps, out_dir)
+    create_animation(steps, out_dir, clim=global_clim)
     
     print(f"\nAll visualizations have been successfully generated in the '{out_dir}' directory!")
 

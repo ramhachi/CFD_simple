@@ -1,0 +1,47 @@
+# Python environments & cache
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# OpenFOAM runtime generated case directories (in root)
+# (Master templates are safely stored in /template/...)
+/[0-9]*/
+/0/
+/processor*/
+/postProcessing/
+/constant/
+/system/
+/VTK/
+
+# Simulation logs
+/logs/
+/log.*
+*.log
+
+# Visualization results
+/visualization_output/
+*.png
+*.gif
+*.mp4
+
+# 3D Model files (often too large for Git)
+*.stl
+*.obj
+*.vtp
+*.vtu
+*.vtk
+
+# IDEs
+.vscode/
+.idea/

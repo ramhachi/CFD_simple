@@ -22,41 +22,41 @@ FoamFile
     {
         type            patch;
         nFaces          300;
-        startFace       260615;
+        startFace       278528;
     }
     outlet
     {
         type            patch;
         nFaces          300;
-        startFace       260915;
+        startFace       278828;
     }
     ground
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          1110;
-        startFace       261215;
+        nFaces          1166;
+        startFace       279128;
     }
     topAndSides
     {
         type            symmetry;
         inGroups        1(symmetry);
         nFaces          1500;
-        startFace       262325;
+        startFace       280294;
     }
     body
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          10398;
-        startFace       263825;
+        nFaces          10248;
+        startFace       281794;
     }
     tires
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          1326;
-        startFace       274223;
+        nFaces          1992;
+        startFace       292042;
     }
 )
 

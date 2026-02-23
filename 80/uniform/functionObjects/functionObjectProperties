@@ -22,11 +22,11 @@ cdf7e925f5746741c316f5fbcf39ad0dfca90775
     {
         vector
         {
-            pressureForce   ( 81.8156 7.0284 12.3472 );
-            viscousForce    ( -0.800572 -0.283207 1.1117 );
+            pressureForce   ( 231.8 -164.154 -120.227 );
+            viscousForce    ( -7.62507 0.115159 -2.19277 );
             internalForce   ( 0 0 0 );
-            pressureMoment  ( -1.7963 32.9384 25.5098 );
-            viscousMoment   ( 0.09128120000000001 -1.57301 0.0145507 );
+            pressureMoment  ( 93.7141 288.658 -176.941 );
+            viscousMoment   ( -0.239281 -2.70881 0.202686 );
             internalMoment  ( 0 0 0 );
         }
     }
@@ -34,53 +34,53 @@ cdf7e925f5746741c316f5fbcf39ad0dfca90775
     {
         scalar
         {
-            Cd              0.3306736217807658;
-            CdPressure      0.3339412611256476;
-            CdViscous       -0.003267639344881884;
+            Cd              0.914999898832173;
+            CdPressure      0.9461226324192747;
+            CdViscous       -0.03112273358710168;
             CdInternal      0;
-            Cd(f)           0.1606972974869516;
-            Cd(f)Pressure   0.1620827328593715;
-            Cd(f)Viscous    -0.00138543537241991;
+            Cd(f)           0.7118531721395094;
+            Cd(f)Pressure   0.7280656441605704;
+            Cd(f)Viscous    -0.01621247202106106;
             Cd(f)Internal   0;
-            Cd(r)           0.1699763242938142;
-            Cd(r)Pressure   0.1718585282662762;
-            Cd(r)Viscous    -0.001882203972461974;
+            Cd(r)           0.2031467266926637;
+            Cd(r)Pressure   0.2180569882587043;
+            Cd(r)Viscous    -0.01491026156604061;
             Cd(r)Internal   0;
-            Cl              0.05493425045275158;
-            ClPressure      0.05039671583821234;
-            ClViscous       0.004537534614539238;
+            Cl              -0.4996741550475955;
+            ClPressure      -0.4907240764239181;
+            ClViscous       -0.008950078623677419;
             ClInternal      0;
-            Cl(f)           0.1128150069667595;
-            Cl(f)Pressure   0.1148265313913069;
-            Cl(f)Viscous    -0.002011524424547362;
+            Cl(f)           0.5282552699026898;
+            Cl(f)Pressure   0.5401012325489635;
+            Cl(f)Viscous    -0.01184596264627366;
             Cl(f)Internal   0;
-            Cl(r)           -0.05788075651400792;
-            Cl(r)Pressure   -0.06442981555309452;
-            Cl(r)Viscous    0.006549059039086601;
+            Cl(r)           -1.027929424950285;
+            Cl(r)Pressure   -1.030825308972882;
+            Cl(r)Viscous    0.002895884022596243;
             Cl(r)Internal   0;
-            CmPitch         0.0853478817403837;
-            CmPitchPressure 0.08962817347220069;
-            CmPitchViscous  -0.004280291731816981;
+            CmPitch         0.7780923474264876;
+            CmPitchPressure 0.7854632707609225;
+            CmPitchViscous  -0.007370923334434953;
             CmPitchInternal 0;
-            CmRoll          -0.004639513403431322;
-            CmRollPressure  -0.004887897703452354;
-            CmRollViscous   0.0002483843000210322;
+            CmRoll          0.2543532227234229;
+            CmRollPressure  0.2550043279509331;
+            CmRollViscous   -0.0006511052275102229;
             CmRollInternal  0;
-            CmYaw           0.06945393218836464;
-            CmYawPressure   0.06941433833362944;
-            CmYawViscous    3.95938547352022e-05;
+            CmYaw           -0.4809200140396316;
+            CmYawPressure   -0.4814715417513427;
+            CmYawViscous    0.0005515277117111498;
             CmYawInternal   0;
-            Cs              0.02753139975466535;
-            CsPressure      0.02868734801353684;
-            CsViscous       -0.001155948258871489;
+            Cs              -0.6695461840940735;
+            CsPressure      -0.6700162218646576;
+            CsViscous       0.0004700377705840396;
             CsInternal      0;
-            Cs(f)           0.08321963206569731;
-            Cs(f)Pressure   0.08375801234039786;
-            Cs(f)Viscous    -0.0005383802747005422;
+            Cs(f)           -0.8156931060866683;
+            Cs(f)Pressure   -0.8164796526836715;
+            Cs(f)Viscous    0.0007865465970031696;
             Cs(f)Internal   0;
-            Cs(r)           -0.05568823231103196;
-            Cs(r)Pressure   -0.05507066432686102;
-            Cs(r)Viscous    -0.0006175679841709466;
+            Cs(r)           0.1461469219925948;
+            Cs(r)Pressure   0.1464634308190139;
+            Cs(r)Viscous    -0.0003165088264191299;
             Cs(r)Internal   0;
         }
     }

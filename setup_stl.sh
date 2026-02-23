@@ -7,5 +7,5 @@ echo 'Processing body.stl ...'
 surfaceTransformPoints -translate '(0.0 0.0 0.0)' ./models/body.stl constant/triSurface/body.stl
 
 echo 'Processing tires.stl ...'
-surfaceTransformPoints -translate '(1.0 0.01 0.0)' ./models/tires.stl constant/triSurface/tires.stl
+surfaceTransformPoints -translate '(0.0 0.0 0.0)' ./models/tires.stl constant/triSurface/tires.stl
 

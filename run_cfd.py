@@ -31,11 +31,15 @@ def main():
     print("      FSAE 簡易CFDシステム Setup Wizard")
     print("==================================================")
 
+    # ディレクトリ準備
+    os.makedirs("models", exist_ok=True)
+    os.makedirs("logs", exist_ok=True)
+
     # 1. STLファイルの検出
     stl_files = [os.path.basename(f) for f in glob.glob("models/*.stl") if os.path.basename(f).lower() not in ["tires.stl", "frame.stl"]]
     if not stl_files:
-        print("エラー: modelsディレクトリに空力部品のSTLファイルが見つかりません。")
-        print("body.stl などのファイルを models/ に配置してから再実行してください。")
+        print("エラー: 'models' ディレクトリ内に空力部品のSTLファイルが見つかりません。")
+        print("body.stl などのファイルを 'models/' に配置してから再実行してください。")
         sys.exit(1)
 
     print("\n検出された空力部品STL:")
@@ -116,32 +120,54 @@ def main():
     print("--------------------------------------------------")
 
     if not args.no_docker:
-        # Dockerの起動（Mac環境でのcredentialパスエラー回避のため環境変数を拡張）
-        env = os.environ.copy()
-        env["PATH"] = env.get("PATH", "") + ":/usr/local/bin:/opt/homebrew/bin:/Applications/Docker.app/Contents/Resources/bin"
-        
-        proc = subprocess.run([
-            "docker", "run", "--rm", 
-            "-v", f"{os.getcwd()}:/data", 
-            "opencfd/openfoam-default", 
-            "bash", "-c", "cd /data && ./template/Allrun"
-        ], env=env)
-        
-        # 6. ホスト側で結果を抽出
-        if proc.returncode == 0:
-            os.makedirs("logs", exist_ok=True)
-            for log_f in glob.glob("log.*"):
-                try:
-                    shutil.move(log_f, os.path.join("logs", log_f))
-                except Exception:
-                    pass
+        if os.environ.get("IN_DOCKER") == "1":
+            print("\n==================================================")
+            print("    Starting CFD Analysis inside Docker")
+            print("==================================================")
             
-            subprocess.run([sys.executable, "extract_results.py"])
+            proc = subprocess.run(["bash", "-c", "./template/Allrun"])
             
-            print("\n[可視化画像・動画生成中...]")
-            subprocess.run([sys.executable, "make_video.py"])
+            if proc.returncode == 0:
+                os.makedirs("logs", exist_ok=True)
+                for log_f in glob.glob("log.*"):
+                    try:
+                        shutil.move(log_f, os.path.join("logs", log_f))
+                    except Exception:
+                        pass
+                
+                subprocess.run([sys.executable, "extract_results.py"])
+                
+                print("\n[可視化画像・動画生成中...]")
+                subprocess.run([sys.executable, "make_video.py"])
+            else:
+                print("解析中にエラーが発生しました。")
         else:
-            print("Docker実行中にエラーが発生しました。")
+            # 従来通りホストからDockerを呼び出す場合 (互換性維持)
+            env = os.environ.copy()
+            env["PATH"] = env.get("PATH", "") + ":/usr/local/bin:/opt/homebrew/bin:/Applications/Docker.app/Contents/Resources/bin"
+            
+            proc = subprocess.run([
+                "docker", "run", "--rm", 
+                "-v", f"{os.getcwd()}:/data", 
+                "opencfd/openfoam-default", 
+                "bash", "-c", "cd /data && ./template/Allrun"
+            ], env=env)
+            
+            # 6. ホスト側で結果を抽出
+            if proc.returncode == 0:
+                os.makedirs("logs", exist_ok=True)
+                for log_f in glob.glob("log.*"):
+                    try:
+                        shutil.move(log_f, os.path.join("logs", log_f))
+                    except Exception:
+                        pass
+                
+                subprocess.run([sys.executable, "extract_results.py"])
+                
+                print("\n[可視化画像・動画生成中...]")
+                subprocess.run([sys.executable, "make_video.py"])
+            else:
+                print("Docker実行中にエラーが発生しました。")
     else:
         print("[TEST MODE] Docker execution skipped.")
 
