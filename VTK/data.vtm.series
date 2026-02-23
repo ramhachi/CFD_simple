@@ -1,0 +1,18 @@
+{
+  "file-series-version" : "1.0",
+  "files" : [
+    { "name" : "data_0.vtm", "time" : 0 },
+    { "name" : "data_20.vtm", "time" : 20 },
+    { "name" : "data_40.vtm", "time" : 40 },
+    { "name" : "data_60.vtm", "time" : 60 },
+    { "name" : "data_80.vtm", "time" : 80 },
+    { "name" : "data_100.vtm", "time" : 100 },
+    { "name" : "data_120.vtm", "time" : 120 },
+    { "name" : "data_140.vtm", "time" : 140 },
+    { "name" : "data_160.vtm", "time" : 160 },
+    { "name" : "data_180.vtm", "time" : 180 },
+    { "name" : "data_200.vtm", "time" : 200 },
+    { "name" : "data_220.vtm", "time" : 220 },
+    { "name" : "data_240.vtm", "time" : 240 }
+  ]
+}

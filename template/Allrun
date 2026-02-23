@@ -1,0 +1,47 @@
+#!/bin/sh
+
+echo "=================================================="
+echo "    Starting CFD Analysis inside Docker"
+echo "=================================================="
+
+# 1. STLの配置 (run_cfd.pyが生成したスクリプト)
+echo "[1/4] Assembling STL files..."
+if [ -f setup_stl.sh ]; then
+    sh setup_stl.sh
+else
+    echo "setup_stl.sh not found. Skipping transformation."
+fi
+
+# 2. メッシュ生成
+echo "[2/4] Generating Mesh..."
+echo "  -> blockMesh"
+blockMesh > log.blockMesh 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: blockMesh failed. Check log.blockMesh."
+    exit 1
+fi
+
+echo "  -> snappyHexMesh"
+snappyHexMesh -overwrite > log.snappyHexMesh 2>&1
+if [ $? -ne 0 ]; then
+    echo "Warning: snappyHexMesh reported an error code, but may have finished. Check log.snappyHexMesh."
+    # exit 1
+fi
+
+# 3. 解析の実行
+echo "[3/4] Solving..."
+echo "  -> simpleFoam"
+simpleFoam > log.simpleFoam 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: simpleFoam failed. Check log.simpleFoam."
+    exit 1
+fi
+
+# 4. 結果処理と可視化準備
+echo "[4/4] Post-processing..."
+echo "  -> foamToVTK"
+foamToVTK > log.foamToVTK 2>&1
+
+echo "=================================================="
+echo "    OpenFOAM Processes Completed successfully!"
+echo "=================================================="
