@@ -1,6 +1,11 @@
 import os
 import glob
 import numpy as np
+
+# Prefer native off-screen rendering in headless environments.
+os.environ.setdefault("PYVISTA_OFF_SCREEN", "true")
+os.environ.setdefault("VTK_DEFAULT_RENDER_WINDOW_OFFSCREEN", "1")
+
 try:
     import pyvista as pv
     import vtk
@@ -177,11 +182,6 @@ def create_sweeping_animation(mesh, step, out_dir, num_frames=30, clim=None):
             print(f"Saved sweeping animation: {gif_path}")
 
 def main():
-    try:
-        pv.start_xvfb()
-    except Exception:
-        pass
-        
     steps = get_vtk_steps()
     if not steps:
         print("No VTK files found. Ensure CFD analysis completed and 'VTK' folder exists.")

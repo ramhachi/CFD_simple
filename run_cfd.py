@@ -35,29 +35,23 @@ def main():
     os.makedirs("models", exist_ok=True)
     os.makedirs("logs", exist_ok=True)
 
-    # 1. STLファイルの検出
-    stl_files = [os.path.basename(f) for f in glob.glob("models/*.stl") if os.path.basename(f).lower() not in ["tires.stl", "frame.stl"]]
-    if not stl_files:
-        print("エラー: 'models' ディレクトリ内に空力部品のSTLファイルが見つかりません。")
+    # 1. STLファイルの検出 (全STLを自動検出)
+    stl_files = [os.path.basename(f) for f in glob.glob("models/*.stl")]
+    aero_stls = [f for f in stl_files if f.lower() not in ["tires.stl", "frame.stl"]]
+    if not aero_stls:
+        print("エラー: 'models' ディレクトリ内にSTLファイルが見つかりません。")
         print("body.stl などのファイルを 'models/' に配置してから再実行してください。")
         sys.exit(1)
 
-    print("\n検出された空力部品STL:")
+    print("\n検出されたSTL:")
     for f in stl_files:
         print(f"  - {f}")
 
+    use_tires = os.path.exists("models/tires.stl")
+    use_frame = os.path.exists("models/frame.stl")
+
     # 2. 変数の取得
     velocity = get_float_input("\n解析する風速を入力してください (m/s) [デフォルト: 20]: ", 20.0)
-    
-    use_tires = input("計算にタイヤ (tires.stl) を含めますか？ (y/n) [デフォルト: y]: ").strip().lower() != 'n'
-    if use_tires and not os.path.exists("models/tires.stl"):
-        print("警告: models/tires.stl が見つかりません。タイヤなしで計算を進めます。")
-        use_tires = False
-
-    use_frame = input("フレーム等の非空力構造物 (frame.stl) を含めますか？ (y/n) [デフォルト: n]: ").strip().lower() == 'y'
-    if use_frame and not os.path.exists("models/frame.stl"):
-        print("警告: models/frame.stl が見つかりません。構造物なしで計算を進めます。")
-        use_frame = False
 
     mesh_level = input("メッシュの細かさを選択してください (1:粗い 2:普通 3:細かい) [デフォルト: 2]: ").strip()
     if mesh_level not in ['1', '2', '3']:
@@ -67,7 +61,7 @@ def main():
 
     # 各STLのオフセット取得
     offsets = {}
-    for stl in stl_files:
+    for stl in aero_stls:
         offsets[stl] = get_xyz_input(stl)
     
     if use_tires:
@@ -100,8 +94,8 @@ def main():
         f.write(f"VELOCITY={velocity}\n")
         f.write(f"MESH_LEVEL={mesh_level}\n")
         
-        aero_stls = ",".join(stl_files)
-        f.write(f"AERO_STLS={aero_stls}\n")
+        aero_stls_str = ",".join(aero_stls)
+        f.write(f"AERO_STLS={aero_stls_str}\n")
         f.write(f"USE_TIRES={1 if use_tires else 0}\n")
         f.write(f"USE_FRAME={1 if use_frame else 0}\n")
 

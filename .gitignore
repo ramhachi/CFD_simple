@@ -29,6 +29,10 @@ Thumbs.db
 /log.*
 *.log
 
+# Auto-generated setup/runtime files
+/cfd_params.txt
+/setup_stl.sh
+
 # Visualization results
 /visualization_output/
 *.png
