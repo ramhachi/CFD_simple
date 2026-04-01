@@ -1,6 +1,7 @@
 import os
 import glob
 import numpy as np
+import sys
 
 # Prefer native off-screen rendering in headless environments.
 os.environ.setdefault("PYVISTA_OFF_SCREEN", "true")
@@ -17,6 +18,18 @@ try:
 except ImportError:
     print("Error: pyvista not found. Please install it with: pip3 install pyvista imageio vtk")
     exit(1)
+
+
+def initialize_headless_rendering():
+    if not sys.platform.startswith("linux"):
+        return
+    if os.environ.get("DISPLAY"):
+        return
+    try:
+        pv.start_xvfb(wait=0.1)
+        print("Started Xvfb for headless rendering.")
+    except Exception as exc:
+        print(f"Warning: could not start Xvfb automatically: {exc}")
 
 def get_vtk_steps():
     """
@@ -52,17 +65,29 @@ def get_global_clim(mesh, fields=['p', 'U']):
                 clim_dict[field] = (float(np.nanmin(arr)), float(np.nanmax(arr)))
     return clim_dict
 
+def get_slice_origin(mesh, normal):
+    """
+    Returns an appropriate origin for slicing: (0,0,0) for X and Y axes
+    (car centerline), and mesh center Z for Z axis (avoids slicing at boundary).
+    """
+    if normal == 'z':
+        cx, cy, cz = mesh.center
+        return (0, 0, cz)
+    return (0, 0, 0)
+
 def generate_static_slices(mesh, step, out_dir, clim=None):
     """
-    Generates X, Y, Z normal slices at origin (0,0,0) for fields 'p' and 'U'.
+    Generates X, Y, Z normal slices for fields 'p' and 'U'.
+    X and Y slices use origin (0,0,0); Z slice uses mesh center height.
     """
     names = ['X', 'Y', 'Z']
     normals = ['x', 'y', 'z']
     fields = ['p', 'U']
-    
+
     for name, normal in zip(names, normals):
         try:
-            slice_mesh = mesh.slice(normal=normal, origin=(0, 0, 0))
+            origin = get_slice_origin(mesh, normal)
+            slice_mesh = mesh.slice(normal=normal, origin=origin)
             if slice_mesh.n_points == 0:
                 continue
                 
@@ -80,8 +105,9 @@ def generate_static_slices(mesh, step, out_dir, clim=None):
                 else: p.view_xy()
                 
                 p.add_axes()
-                p.add_title(f"{field} Distribution on {name}=0 Plane (Step {step})", font_size=12)
-                
+                coord_val = origin[['x','y','z'].index(normal)]
+                p.add_title(f"{field} Distribution on {name}={coord_val:.2f} Plane (Step {step})", font_size=12)
+
                 out_path = os.path.join(out_dir, f"{field}_slice_{name}_step{step}.png")
                 p.screenshot(out_path)
                 p.close()
@@ -91,42 +117,44 @@ def generate_static_slices(mesh, step, out_dir, clim=None):
 
 def create_animation(steps, out_dir, clim=None):
     """
-    Creates GIF animations for 'p' and 'U' on X=0, Y=0, Z=0 planes across all steps.
+    Creates GIF animations for 'p' and 'U' on X=0, Y=0, and mesh-center Z planes across all steps.
     """
     names = ['X', 'Y', 'Z']
     normals = ['x', 'y', 'z']
     fields = ['p', 'U']
-    
+
     for name, normal in zip(names, normals):
         for field in fields:
             gif_path = os.path.join(out_dir, f"{field}_animation_{name}.gif")
             print(f"Generating animation: {gif_path} ...")
-            
+
             p = pv.Plotter(off_screen=True)
             p.open_gif(gif_path)
-            
+
             for step, filepath in steps:
                 try:
                     mesh = pv.read(filepath)
-                    slice_mesh = mesh.slice(normal=normal, origin=(0, 0, 0))
-                    
+                    origin = get_slice_origin(mesh, normal)
+                    slice_mesh = mesh.slice(normal=normal, origin=origin)
+
                     if slice_mesh.n_points == 0 or field not in slice_mesh.array_names:
                         continue
-                    
+
                     p.clear()
                     field_clim = clim.get(field) if clim else None
                     p.add_mesh(slice_mesh, scalars=field, cmap='jet', clim=field_clim)
-                    
+
                     if normal == 'x': p.view_yz()
                     elif normal == 'y': p.view_xz()
                     else: p.view_xy()
-                    
+
                     p.add_axes()
-                    p.add_title(f"{field} Distribution on {name}=0 Plane (Step {step})", font_size=12)
+                    coord_val = origin[['x','y','z'].index(normal)]
+                    p.add_title(f"{field} Distribution on {name}={coord_val:.2f} Plane (Step {step})", font_size=12)
                     p.write_frame()
                 except Exception:
                     pass
-            
+
             p.close()
             print(f"Saved animation: {gif_path}")
 
@@ -182,6 +210,7 @@ def create_sweeping_animation(mesh, step, out_dir, num_frames=30, clim=None):
             print(f"Saved sweeping animation: {gif_path}")
 
 def main():
+    initialize_headless_rendering()
     steps = get_vtk_steps()
     if not steps:
         print("No VTK files found. Ensure CFD analysis completed and 'VTK' folder exists.")

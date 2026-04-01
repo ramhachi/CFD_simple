@@ -40,7 +40,7 @@ boundaryField
     {
         type            symmetry;
     }
-    "(body.*|tires.*|frame.*)"
+    ".*"
     {
         type            kqRWallFunction;
         value           uniform 0.24;

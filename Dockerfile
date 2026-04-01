@@ -8,6 +8,14 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-venv \
     xvfb \
+    libxcursor1 \
+    libxrender1 \
+    libxfixes3 \
+    libxi6 \
+    libxext6 \
+    libx11-6 \
+    libsm6 \
+    libice6 \
     libgl1 \
     libglx-mesa0 \
     libglib2.0-0 \
