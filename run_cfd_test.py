@@ -17,9 +17,9 @@ def main():
     if TEMP_DIR.exists():
         shutil.rmtree(TEMP_DIR)
     TEMP_DIR.mkdir()
-    write_box_stl(TEMP_DIR / 'mini4wd_mm.stl', 160.0, 85.0, 45.0)
+    write_box_stl(TEMP_DIR / 'Part Studio 1 - Part 1.stl', 160.0, 85.0, 45.0)
 
-    user_input = '20\n2\n12\n0\n0\n0\n'
+    user_input = '20\n2\n0\n0\n0\n0\n'
     process = subprocess.run(
         [sys.executable, 'run_cfd.py', '--no-docker', '--stl-dir', str(TEMP_DIR)],
         cwd=ROOT_DIR,

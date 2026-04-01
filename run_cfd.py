@@ -16,6 +16,10 @@ from typing import Dict, Iterable, List, Sequence, Tuple
 ROOT_DIR = Path(__file__).resolve().parent
 DEFAULT_MODEL_DIRS = ("model", "models")
 AIR_KINEMATIC_VISCOSITY = 1.5e-5
+STAGED_TRI_SURFACE_INPUT_DIR = Path('constant') / 'triSurfaceInput'
+ZERO_CLEARANCE_GAP_RATIO = 1e-3
+MIN_ZERO_CLEARANCE_GAP_M = 5e-4
+MAX_ZERO_CLEARANCE_GAP_M = 1e-3
 MESH_LEVEL_LABELS = {
     '1': '粗い',
     '2': '普通',
@@ -57,7 +61,9 @@ class CaseConfiguration:
     tire_names: List[str]
     offsets_mm: Dict[str, Tuple[float, float, float]]
     clearance_mm: float
+    effective_clearance_mm: float
     auto_ground_shift_mm: float
+    ground_gap_guard_mm: float
     velocity: float
     mesh_level: str
     overall_bounds: Tuple[float, float, float, float, float, float]
@@ -180,6 +186,24 @@ def classify_role(path: Path) -> str:
     if stem == 'tires':
         return 'tires'
     return 'surface'
+
+
+def get_part_characteristic_length(part: StlPart) -> float:
+    xmin, xmax, ymin, ymax, zmin, zmax = part.scaled_bounds
+    return max(xmax - xmin, ymax - ymin, zmax - zmin, 1e-6)
+
+
+def compute_zero_clearance_guard_m(parts: Sequence[StlPart]) -> float:
+    characteristic = max(get_part_characteristic_length(part) for part in parts)
+    return clamp_float(
+        characteristic * ZERO_CLEARANCE_GAP_RATIO,
+        MIN_ZERO_CLEARANCE_GAP_M,
+        MAX_ZERO_CLEARANCE_GAP_M,
+    )
+
+
+def get_staged_input_relative_path(part: StlPart) -> Path:
+    return STAGED_TRI_SURFACE_INPUT_DIR / f'{part.safe_base}_input.stl'
 
 
 def resolve_stl_directories(stl_dir: str = None) -> List[Path]:
@@ -378,7 +402,13 @@ def build_case_configuration(
         min_prealigned_z = min(min_prealigned_z, zmin + z_shift_mm / 1000.0)
 
     clearance_m = clearance_mm / 1000.0
-    auto_ground_shift_m = clearance_m - min_prealigned_z
+    ground_gap_guard_m = 0.0
+    effective_clearance_m = clearance_m
+    if math.isclose(clearance_m, 0.0, abs_tol=1e-12):
+        ground_gap_guard_m = compute_zero_clearance_guard_m(parts)
+        effective_clearance_m = ground_gap_guard_m
+
+    auto_ground_shift_m = effective_clearance_m - min_prealigned_z
 
     prepared_parts: List[PreparedPart] = []
     ov_xmin = ov_ymin = ov_zmin = float('inf')
@@ -413,7 +443,9 @@ def build_case_configuration(
         tire_names=tire_names,
         offsets_mm=offsets_mm,
         clearance_mm=clearance_mm,
+        effective_clearance_mm=effective_clearance_m * 1000.0,
         auto_ground_shift_mm=auto_ground_shift_m * 1000.0,
+        ground_gap_guard_mm=ground_gap_guard_m * 1000.0,
         velocity=velocity,
         mesh_level=mesh_level,
         overall_bounds=overall_bounds,
@@ -453,6 +485,13 @@ def prepare_runtime_templates() -> None:
         shutil.copytree(ROOT_DIR / 'template' / name, ROOT_DIR / name)
 
 
+def stage_source_stl_files(configuration: CaseConfiguration) -> None:
+    for prepared in configuration.prepared_parts:
+        staged_input_path = ROOT_DIR / get_staged_input_relative_path(prepared.part)
+        staged_input_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(prepared.part.source_path, staged_input_path)
+
+
 def write_setup_stl_script(configuration: CaseConfiguration) -> None:
     lines = [
         '#!/bin/sh',
@@ -465,6 +504,7 @@ def write_setup_stl_script(configuration: CaseConfiguration) -> None:
 
     for prepared in configuration.prepared_parts:
         source_rel = prepared.part.relative_path.as_posix()
+        staged_input_rel = get_staged_input_relative_path(prepared.part).as_posix()
         translation = ' '.join(format(value, '.6f') for value in prepared.translation_m)
         read_scale = format(prepared.part.unit_scale, '.6f').rstrip('0').rstrip('.') or '1'
         safe_file = f"{prepared.part.safe_base}.stl"
@@ -473,7 +513,7 @@ def write_setup_stl_script(configuration: CaseConfiguration) -> None:
             'surfaceTransformPoints '
             f"-read-scale {read_scale} "
             f"-translate '({translation})' "
-            f"{shlex.quote('./' + source_rel)} "
+            f"{shlex.quote(staged_input_rel)} "
             f"{shlex.quote('constant/triSurface/' + safe_file)}"
         )
         lines.append('')
@@ -499,7 +539,9 @@ def write_params_file(configuration: CaseConfiguration) -> None:
         'USE_FRAME': 1 if configuration.frame_names else 0,
         'USE_TIRES': 1 if configuration.tire_names else 0,
         'CLEARANCE_MM': round(configuration.clearance_mm, 3),
+        'EFFECTIVE_CLEARANCE_MM': round(configuration.effective_clearance_mm, 3),
         'AUTO_GROUND_SHIFT_MM': round(configuration.auto_ground_shift_mm, 3),
+        'GROUND_GAP_GUARD_MM': round(configuration.ground_gap_guard_mm, 3),
     }
     params.update({key.upper(): value for key, value in configuration.domain.items()})
 
@@ -638,6 +680,10 @@ def print_case_summary(configuration: CaseConfiguration) -> None:
     domain = configuration.domain
     print('\n[自動調整結果]')
     print(f"  全体境界         : X[{xmin:.4f}, {xmax:.4f}] Y[{ymin:.4f}, {ymax:.4f}] Z[{zmin:.4f}, {zmax:.4f}]")
+    print(f"  指定地上高       : {configuration.clearance_mm:.2f} mm")
+    print(f"  実効地上高       : {configuration.effective_clearance_mm:.2f} mm")
+    if configuration.ground_gap_guard_mm > 0.0:
+        print(f"  0mm安全浮上量    : {configuration.ground_gap_guard_mm:.2f} mm")
     print(f"  追加自動Zシフト  : {configuration.auto_ground_shift_mm:.2f} mm")
     print(
         '  風洞ドメイン     : '
@@ -650,16 +696,6 @@ def print_case_summary(configuration: CaseConfiguration) -> None:
     print(f"  代表長さ / 面積  : Lref={domain['l_ref']:.4f} m, Aref={domain['a_ref']:.4f} m^2")
     print(f"  推定Re数         : {int(domain['reynolds_number']):,}")
     print(f"  メッシュ段階     : {configuration.mesh_level} ({MESH_LEVEL_LABELS[configuration.mesh_level]})")
-
-
-def ensure_directory_is_mountable(parts: Sequence[StlPart], no_docker: bool) -> None:
-    if no_docker:
-        return
-    for part in parts:
-        if not part.source_path.is_relative_to(ROOT_DIR):
-            raise ConfigurationError(
-                f"Docker 実行時はリポジトリ配下の STL のみ使用できます: {part.source_path}"
-            )
 
 
 def main() -> None:
@@ -682,7 +718,6 @@ def main() -> None:
 
     try:
         parts = discover_stl_files(args.stl_dir, args.stl_unit)
-        ensure_directory_is_mountable(parts, args.no_docker)
     except ConfigurationError as error:
         print(f'エラー: {error}')
         sys.exit(1)
@@ -706,6 +741,7 @@ def main() -> None:
     print('\n[システム構築中...]')
     clear_generated_case()
     prepare_runtime_templates()
+    stage_source_stl_files(configuration)
     write_setup_stl_script(configuration)
     write_params_file(configuration)
 
