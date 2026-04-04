@@ -45,6 +45,10 @@ Thumbs.db
 *.vtp
 *.vtu
 *.vtk
+!model/**/*.stl
+!model/**/*.STL
+!models/**/*.stl
+!models/**/*.STL
 
 # IDEs
 .vscode/
