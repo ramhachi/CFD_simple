@@ -4,6 +4,8 @@ import sys
 import unittest
 from pathlib import Path
 
+import run_cfd
+
 
 ROOT_DIR = Path(__file__).resolve().parent
 TEMP_ROOT = ROOT_DIR / 'test_artifacts'
@@ -97,6 +99,22 @@ class RunCfdSmokeTests(unittest.TestCase):
         self.assertGreater(float(params['GROUND_GAP_GUARD_MM']), 0.0)
         self.assertEqual(params['EFFECTIVE_CLEARANCE_MM'], params['GROUND_GAP_GUARD_MM'])
         self.assertIn('0mm安全浮上量', stdout)
+
+    def test_prepare_shell_script_normalizes_crlf(self):
+        script_path = TEMP_ROOT / 'Allrun'
+        script_path.write_bytes(b'#!/bin/sh\r\necho ok\r\n')
+
+        run_cfd.prepare_shell_script(script_path)
+
+        self.assertEqual(script_path.read_bytes(), b'#!/bin/sh\necho ok\n')
+        result = subprocess.run(
+            ['bash', str(script_path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stdout + '\n' + result.stderr)
+        self.assertEqual(result.stdout.strip(), 'ok')
 
 
 if __name__ == '__main__':

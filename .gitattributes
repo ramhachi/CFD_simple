@@ -1,0 +1,7 @@
+*.bat text eol=crlf
+*.py text eol=lf
+*.sh text eol=lf
+Dockerfile text eol=lf
+template/Allrun text eol=lf
+*.stl binary
+*.STL binary

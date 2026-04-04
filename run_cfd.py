@@ -480,6 +480,16 @@ def clear_generated_case() -> None:
             generated_file.unlink()
 
 
+def prepare_shell_script(path: Path) -> None:
+    if not path.exists():
+        raise ConfigurationError(f"必要なスクリプトが見つかりません: {to_display_path(path)}")
+
+    raw = path.read_bytes()
+    normalized = raw.replace(b'\r\n', b'\n').replace(b'\r', b'\n')
+    if normalized != raw:
+        path.write_bytes(normalized)
+
+
 def prepare_runtime_templates() -> None:
     for name in ('0', 'system', 'constant'):
         shutil.copytree(ROOT_DIR / 'template' / name, ROOT_DIR / name)
@@ -627,6 +637,12 @@ def run_analysis(args: argparse.Namespace) -> int:
     env = os.environ.copy()
     env['PATH'] = env.get('PATH', '') + ':/usr/local/bin:/opt/homebrew/bin:/Applications/Docker.app/Contents/Resources/bin'
 
+    try:
+        prepare_shell_script(ROOT_DIR / 'template' / 'Allrun')
+    except ConfigurationError as error:
+        print(f'エラー: {error}')
+        return 1
+
     if args.no_docker:
         print('[TEST MODE] Docker execution skipped.')
         return 0
@@ -635,7 +651,7 @@ def run_analysis(args: argparse.Namespace) -> int:
         print('\n==================================================')
         print('    Starting CFD Analysis inside Docker')
         print('==================================================')
-        proc = subprocess.run(['bash', '-lc', './template/Allrun'], cwd=ROOT_DIR, check=False)
+        proc = subprocess.run(['bash', './template/Allrun'], cwd=ROOT_DIR, check=False)
         if proc.returncode != 0:
             print('解析中にエラーが発生しました。')
             return proc.returncode
@@ -650,7 +666,7 @@ def run_analysis(args: argparse.Namespace) -> int:
         print(f'エラー: {error}')
         return 1
 
-    command = 'cd /data && ./template/Allrun && python3 extract_results.py'
+    command = 'cd /data && bash ./template/Allrun && python3 extract_results.py'
     proc = subprocess.run(
         ['docker', 'run', '--rm', '-v', f'{ROOT_DIR}:/data', 'fsae-cfd', 'bash', '-lc', command],
         env=env,
